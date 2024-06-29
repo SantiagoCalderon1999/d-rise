@@ -220,8 +220,4 @@ def get_drise_saliency_map(
                        if not torch.isnan(
                        saliency_scores[img_index][i]['detection']).any()]
 
-    num_detections = len(saliency_scores)
-    if num_detections == 0:
-        raise ValueError("No detections found")
-
     return saliency_scores
