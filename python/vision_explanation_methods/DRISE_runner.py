@@ -20,7 +20,7 @@ from torchvision.models import detection
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 from .explanations import drise
-
+import numpy as np
 try:
     from matplotlib.axes._subplots import AxesSubplot
 except ImportError:
@@ -131,17 +131,26 @@ def get_drise_saliency_map(
         response = requests.get(imagelocation)
         image_open_pointer = BytesIO(response.content)
 
-    test_image = Image.open(image_open_pointer).convert('RGB')
+    image = Image.open(image_open_pointer).convert('RGB')
+    x, y = image.size
+    imgio = BytesIO()
+    image.save(imgio, format='PNG')
+    img_str = base64.b64encode(imgio.getvalue()).decode('utf8')
+    img_input = pd.DataFrame(
+        data=[[img_str, (y, x)]],
+        columns=['image', 'image_size'],
+    )
+    return get_drise_saliency_map(img_input, model, nummasks, maskres, maskpadding, device)
 
+def get_drise_saliency_map(
+        image, 
+        model: object, 
+        nummasks: int = 25, 
+        maskres: Tuple[int, int] = (4, 4), 
+        maskpadding: Optional[int] = None, 
+        device: Optional[str] = None):
     if isinstance(model, MLflowDRiseWrapper):
-        x, y = test_image.size
-        imgio = BytesIO()
-        test_image.save(imgio, format='PNG')
-        img_str = base64.b64encode(imgio.getvalue()).decode('utf8')
-        img_input = pd.DataFrame(
-            data=[[img_str, (y, x)]],
-            columns=['image', 'image_size'],
-        )
+
 
         detections = model.predict(img_input)
         saliency_scores = drise.DRISE_saliency_for_mlflow(
@@ -160,7 +169,7 @@ def get_drise_saliency_map(
             verbose=True  # Turns progress bar on/off.
         )
     else:
-        img_input = test_image
+        img_input = image
         if hasattr(model, "transforms") and model.transforms is not None:
             img_input = model.transforms(img_input)
         if not torch.is_tensor(img_input):
