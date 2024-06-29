@@ -196,34 +196,4 @@ def get_drise_saliency_map(
     if num_detections == 0:
         raise ValueError("No detections found")
 
-    label_list = []
-    fig_list = []
-    for i in range((max_figures if num_detections > max_figures
-                    else num_detections)):
-        fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-        label = int(torch.argmax(detections[img_index].class_scores[i]))
-        label_list.append(label)
-
-        viz.visualize_image_attr(
-            numpy.transpose(
-                saliency_scores[i]['detection'].cpu().detach().numpy(),
-                (1, 2, 0)),
-            numpy.transpose(T.ToTensor()(test_image).numpy(), (1, 2, 0)),
-            method="blended_heat_map",
-            sign="positive",
-            show_colorbar=True,
-            cmap=plt.cm.gist_rainbow,
-            title="Detection " + str(i),
-            plt_fig_axis=(fig, ax),
-            use_pyplot=False
-        )
-
-        stream = BytesIO()
-        plt.savefig(stream, format='jpg')
-        stream.seek(0)
-        b64_string = base64.b64encode(stream.read()).decode()
-        fig_list.append(b64_string)
-        fig.savefig(savename+str(i)+IMAGE_TYPE)
-        fig.clear()
-
-    return fig_list, savename, label_list
+    return saliency_scores
