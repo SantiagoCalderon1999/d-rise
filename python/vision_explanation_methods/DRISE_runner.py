@@ -80,7 +80,7 @@ def get_instance_segmentation_model(num_classes: int):
     return model
 
 
-def get_drise_saliency_map(
+def get_drise_saliency_map_from_path(
         imagelocation: str,
         model: Optional[object],
         numclasses: int,
@@ -149,6 +149,25 @@ def get_drise_saliency_map(
         maskres: Tuple[int, int] = (4, 4), 
         maskpadding: Optional[int] = None, 
         device: Optional[str] = None):
+    """Run D-RISE on image and visualize the saliency maps.
+
+    :param image: Array containing the image
+    :type imagelocation: str
+    :param model: Input model for D-RISE. If None, Faster R-CNN model
+        will be used.
+    :type model: PyTorch model
+    :param nummasks: Number of masks to use for saliency
+    :type nummasks: int
+    :param maskres: Resolution of mask before scale up
+    :type maskres: Tuple of ints
+    :param maskpadding: How much to pad the mask before cropping
+    :type: Optional int
+    :param device: Device to run the model on
+    :type: Optional str
+    :return: Tuple of Matplotlib figure list, path to where the output
+        figure is saved, list of labels
+    :rtype: Tuple of - list of Matplotlib figures, str, list
+    """
     if isinstance(model, MLflowDRiseWrapper):
 
 
