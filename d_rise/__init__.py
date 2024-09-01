@@ -6,8 +6,8 @@
 
 from .version import name, version
 from .DRISE_runner import get_saliency_map
-from .models.yolo import YOLO
-from .models.rt_detr import RTDETR
+from .models.yolo import Yolo
+from .models.rt_detr import RtDetr
 from .models.faster_rcnn import FasterRcnn
 from .models.model_factory import ModelFactory
 from .models.model_enum import ModelEnum
