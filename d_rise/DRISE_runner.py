@@ -143,13 +143,15 @@ def get_drise_saliency_map_from_path(
     return get_saliency_map(img_input, model, nummasks, maskres, maskpadding, device)
 
 def get_saliency_map(
-        image: np.ndarray, 
-        model: object, 
-        nummasks: int = 25, 
-        maskres: Tuple[int, int] = (4, 4), 
-        maskpadding: Optional[int] = None, 
-        device: Optional[str] = None,
-        verbose: bool = True):
+    image,
+    model: object,
+    nummasks: int = 25,
+    maskres: Tuple[int, int] = (4, 4),
+    maskpadding: Optional[int] = None,
+    device: Optional[str] = None,
+    seed_start: int = 0,
+    verbose: bool = True
+):
     """Run D-RISE on image and visualize the saliency maps.
 
     :param image: Array containing the image
@@ -190,15 +192,16 @@ def get_saliency_map(
         # This is the resolution of the random masks.
         # High resolutions will give finer masks, but more need to be run.
         mask_res=maskres,
-        verbose=verbose  # Turns progress bar on/off.
+        verbose=verbose,  # Turns progress bar on/off.
+        seed=seed_start
     )
 
     img_index = 0
 
     # Filter out saliency scores containing nan values
-    saliency_scores = [saliency_scores[img_index][i]
+    results_drise = [saliency_scores[img_index][i]
                        for i in range(len(saliency_scores[img_index]))
                        if not torch.isnan(
                        saliency_scores[img_index][i]['detection']).any()]
 
-    return saliency_scores
+    return [np.array(saliency_map["detection"])[0] for saliency_map in results_drise]

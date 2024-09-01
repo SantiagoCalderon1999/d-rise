@@ -19,8 +19,9 @@ import PIL.Image as Image
 import torch
 import torchvision.transforms as T
 import tqdm
-from torch import Tensor
+import random
 
+from torch import Tensor
 from .common import (DetectionRecord, GeneralObjectDetectionModelWrapper,
                      compute_affinity_matrix)
 
@@ -82,6 +83,7 @@ def generate_mask(
         img_size: Tuple[int, int],
         padding: int,
         device: str,
+        seed: float
 ) -> torch.Tensor:
     """Create a random mask for image occlusion.
 
@@ -97,6 +99,7 @@ def generate_mask(
     :rtype: Tensor
     """
     # Needs to be float for resize interpolation
+    torch.manual_seed(seed)
     base_mask = 1.0 * torch.randint(0, 2, base_size, device=device)
     mask = base_mask.repeat([3, 1, 1])
     resized_mask = T.Resize(
@@ -219,6 +222,7 @@ def DRISE_saliency(
         mask_padding: Optional[int] = None,
         device: str = "cpu",
         verbose: bool = False,
+        seed: int = 0
 ) -> List[torch.Tensor]:
     """Compute DRISE saliency map.
 
@@ -249,9 +253,9 @@ def DRISE_saliency(
 
     mask_iterator = tqdm.tqdm(range(number_of_masks)) if verbose \
         else range(number_of_masks)
-
+    random.seed(seed)
     for _ in mask_iterator:
-        mask = generate_mask(mask_res, img_size, mask_padding, device)
+        mask = generate_mask(mask_res, img_size, mask_padding, device, seed = random.random())
         masked_image = fuse_mask(image_tensor, mask)
         with torch.no_grad():
             masked_detections = model.predict(masked_image)
