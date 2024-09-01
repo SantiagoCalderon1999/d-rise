@@ -149,7 +149,7 @@ def get_saliency_map(
     maskres: Tuple[int, int] = (4, 4),
     maskpadding: Optional[int] = None,
     device: Optional[str] = None,
-    seed_start: int = 0,
+    seed: int = 0,
     verbose: bool = True
 ):
     """Run D-RISE on image and visualize the saliency maps.
@@ -199,7 +199,7 @@ def get_saliency_map(
             # High resolutions will give finer masks, but more need to be run.
             mask_res=maskres,
             verbose=verbose,  # Turns progress bar on/off.
-            seed=seed_start
+            seed=seed
         )
 
         img_index = 0
