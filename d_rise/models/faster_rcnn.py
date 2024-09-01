@@ -7,7 +7,7 @@ from torchvision.models.detection import (
     FasterRCNN_ResNet50_FPN_Weights,
     fasterrcnn_resnet50_fpn,
 )
-from incx.models.base_model import BaseModel
+from d_rise.models.base_model import BaseModel
 
 
 class FasterRcnn(BaseModel):

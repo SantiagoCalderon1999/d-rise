@@ -3,7 +3,7 @@ from d_rise.explanations import (
 )
 import numpy as np
 import torch
-from incx.models.base_model import BaseModel
+from d_rise.models.base_model import BaseModel
 from ultralytics import RTDETR
 
 

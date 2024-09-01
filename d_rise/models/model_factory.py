@@ -1,8 +1,8 @@
-from incx.models.model_enum import ModelEnum
-from incx.models.base_model import BaseModel
-from incx.models.rt_detr import RtDetr
-from incx.models.yolo import Yolo
-from incx.models.faster_rcnn import FasterRcnn
+from d_rise.models.model_enum import ModelEnum
+from d_rise.models.base_model import BaseModel
+from d_rise.models.rt_detr import RtDetr
+from d_rise.models.yolo import Yolo
+from d_rise.models.faster_rcnn import FasterRcnn
 
 
 class ModelFactory:

@@ -1,4 +1,4 @@
-from incx.dependencies.d_rise.vision_explanation_methods.explanations import (
+from d_rise.explanations import (
     common as od_common,
 )
 import torch
