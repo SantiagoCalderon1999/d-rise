@@ -207,7 +207,8 @@ def saliency_fusion(
         normalized_masks.append(normed_masks)
 
     return normalized_masks
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 def DRISE_saliency(
         model: GeneralObjectDetectionModelWrapper,
@@ -254,6 +255,11 @@ def DRISE_saliency(
         masked_image = fuse_mask(image_tensor, mask)
         with torch.no_grad():
             masked_detections = model.predict(masked_image)
+        # print(masked_detections[0].class_scores)
+        # max_vals = [max(class_score) for class_score in masked_detections[0].class_scores]
+        # plt.title(f'{max_vals}')
+        # plt.imshow(tensor_to_numpy_image(masked_image))
+        # plt.show()
         affinity_scores = []
 
         for (target_detection, masked_detection) in zip(target_detections,
@@ -267,6 +273,31 @@ def DRISE_saliency(
         )
     return saliency_fusion(mask_records, device, verbose=verbose)
 
+def tensor_to_numpy_image(tensor: torch.Tensor) -> np.ndarray:
+    """
+    Converts a PyTorch tensor to a NumPy array suitable for plt.imshow.
+
+    :param tensor: A tensor of shape (C, H, W) with values in the range [0, 1] or [0, 255]
+    :return: A NumPy array of shape (H, W, C) with values in the range [0, 255]
+    """
+    if len(tensor.shape) == 4 and tensor.shape[0] == 1:
+        tensor = tensor.squeeze(0)  # Remove the batch dimension if it exists
+
+    if tensor.dtype == torch.float32:
+        tensor = tensor * 255  # Convert [0, 1] range to [0, 255]
+
+    tensor = tensor.byte()  # Convert to byte tensor
+
+    if tensor.shape[0] == 1:  # Grayscale image
+        tensor = tensor.squeeze(0)
+        numpy_image = tensor.cpu().numpy()
+    elif tensor.shape[0] == 3:  # RGB image
+        tensor = tensor.permute(1, 2, 0)  # Change to (H, W, C)
+        numpy_image = tensor.cpu().numpy()
+    else:
+        raise ValueError("Tensor shape not supported for image conversion")
+
+    return numpy_image
 
 def convert_base64_to_tensor(b64_img: str, device: str) -> Tensor:
     """Convert base64 image to tensor.

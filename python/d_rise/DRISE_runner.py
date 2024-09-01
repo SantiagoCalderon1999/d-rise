@@ -140,15 +140,16 @@ def get_drise_saliency_map_from_path(
         data=[[img_str, (y, x)]],
         columns=['image', 'image_size'],
     )
-    return get_drise_saliency_map(img_input, model, nummasks, maskres, maskpadding, device)
+    return get_saliency_map(img_input, model, nummasks, maskres, maskpadding, device)
 
-def get_drise_saliency_map(
-        image, 
+def get_saliency_map(
+        image: np.ndarray, 
         model: object, 
         nummasks: int = 25, 
         maskres: Tuple[int, int] = (4, 4), 
         maskpadding: Optional[int] = None, 
-        device: Optional[str] = None):
+        device: Optional[str] = None,
+        verbose: bool = True):
     """Run D-RISE on image and visualize the saliency maps.
 
     :param image: Array containing the image
@@ -168,49 +169,29 @@ def get_drise_saliency_map(
         figure is saved, list of labels
     :rtype: Tuple of - list of Matplotlib figures, str, list
     """
-    if isinstance(model, MLflowDRiseWrapper):
+    
+    if hasattr(model, "transforms") and model.transforms is not None:
+        image = model.transforms(image)
+    if not torch.is_tensor(image):
+        image = T.ToTensor()(image)
+    image = image.unsqueeze(0).to(device)
+    detections = model.predict(image)
 
-
-        detections = model.predict(img_input)
-        saliency_scores = drise.DRISE_saliency_for_mlflow(
-            model=model,
-            # Repeated the tensor to test batching
-            image_tensor=img_input,
-            target_detections=detections,
-            # This is how many masks to run -
-            # more is slower but gives higher quality mask.
-            number_of_masks=nummasks,
-            mask_padding=maskpadding,
-            device=device,
-            # This is the resolution of the random masks.
-            # High resolutions will give finer masks, but more need to be run.
-            mask_res=maskres,
-            verbose=True  # Turns progress bar on/off.
-        )
-    else:
-        img_input = image
-        if hasattr(model, "transforms") and model.transforms is not None:
-            img_input = model.transforms(img_input)
-        if not torch.is_tensor(img_input):
-            img_input = T.ToTensor()(img_input)
-        img_input = img_input.unsqueeze(0).to(device)
-        detections = model.predict(img_input)
-
-        saliency_scores = drise.DRISE_saliency(
-            model=model,
-            # Repeated the tensor to test batching
-            image_tensor=img_input,
-            target_detections=detections,
-            # This is how many masks to run -
-            # more is slower but gives higher quality mask.
-            number_of_masks=nummasks,
-            mask_padding=maskpadding,
-            device=device,
-            # This is the resolution of the random masks.
-            # High resolutions will give finer masks, but more need to be run.
-            mask_res=maskres,
-            verbose=True  # Turns progress bar on/off.
-        )
+    saliency_scores = drise.DRISE_saliency(
+        model=model,
+        # Repeated the tensor to test batching
+        image_tensor=image,
+        target_detections=detections,
+        # This is how many masks to run -
+        # more is slower but gives higher quality mask.
+        number_of_masks=nummasks,
+        mask_padding=maskpadding,
+        device=device,
+        # This is the resolution of the random masks.
+        # High resolutions will give finer masks, but more need to be run.
+        mask_res=maskres,
+        verbose=verbose  # Turns progress bar on/off.
+    )
 
     img_index = 0
 

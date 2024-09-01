@@ -1,6 +1,6 @@
 """Metadata including name and version of package."""
 
-name = 'vision_explanation_methods'
+name = 'd_rise'
 _major = '0'
 _minor = '1'
 _patch = '1'
