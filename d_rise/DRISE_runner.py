@@ -179,29 +179,36 @@ def get_saliency_map(
     image = image.unsqueeze(0).to(device)
     detections = model.predict(image)
 
-    saliency_scores = drise.DRISE_saliency(
-        model=model,
-        # Repeated the tensor to test batching
-        image_tensor=image,
-        target_detections=detections,
-        # This is how many masks to run -
-        # more is slower but gives higher quality mask.
-        number_of_masks=nummasks,
-        mask_padding=maskpadding,
-        device=device,
-        # This is the resolution of the random masks.
-        # High resolutions will give finer masks, but more need to be run.
-        mask_res=maskres,
-        verbose=verbose,  # Turns progress bar on/off.
-        seed=seed_start
-    )
+    number = 0
+    counter = 0
+    
+    while len(detections) != number:
 
-    img_index = 0
+        counter += 1
+        saliency_scores = drise.DRISE_saliency(
+            model=model,
+            # Repeated the tensor to test batching
+            image_tensor=image,
+            target_detections=detections,
+            # This is how many masks to run -
+            # more is slower but gives higher quality mask.
+            number_of_masks=nummasks,
+            mask_padding=maskpadding,
+            device=device,
+            # This is the resolution of the random masks.
+            # High resolutions will give finer masks, but more need to be run.
+            mask_res=maskres,
+            verbose=verbose,  # Turns progress bar on/off.
+            seed=seed_start
+        )
 
-    # Filter out saliency scores containing nan values
-    results_drise = [saliency_scores[img_index][i]
-                       for i in range(len(saliency_scores[img_index]))
-                       if not torch.isnan(
-                       saliency_scores[img_index][i]['detection']).any()]
+        img_index = 0
+
+        # Filter out saliency scores containing nan values
+        results_drise = [saliency_scores[img_index][i]
+                        for i in range(len(saliency_scores[img_index]))
+                        if not torch.isnan(
+                        saliency_scores[img_index][i]['detection']).any()]
+        number = len(results_drise)
 
     return [np.array(saliency_map["detection"])[0] for saliency_map in results_drise]
