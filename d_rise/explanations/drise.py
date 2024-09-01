@@ -255,7 +255,8 @@ def DRISE_saliency(
         else range(number_of_masks)
     random.seed(seed)
     for _ in mask_iterator:
-        mask = generate_mask(mask_res, img_size, mask_padding, device, seed = random.random())
+        seed = random.randint(1, 1000000)
+        mask = generate_mask(mask_res, img_size, mask_padding, device, seed = seed)
         masked_image = fuse_mask(image_tensor, mask)
         with torch.no_grad():
             masked_detections = model.predict(masked_image)
