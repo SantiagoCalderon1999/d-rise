@@ -9,7 +9,7 @@ import shutil
 
 from setuptools import find_packages, setup
 
-with open('vision_explanation_methods/version.py') as f:
+with open('d_rise/version.py') as f:
     code = compile(f.read(), f.name, 'exec')
     exec(code)
 
